@@ -23,8 +23,7 @@ func getUserData(for id: Int) -> String {
     }
 }
 
-
-//parameter names get lost when creating a closure
+// parameter names get lost when creating a closure
 let data: (Int) -> String = getUserData
 let user = data(1989)
 print(user)
@@ -43,7 +42,16 @@ func captainFirstSorted(name1: String, name2: String) -> Bool {
     }
 }
 
-let captainFirstTEam = team.sorted(by: captainFirstSorted)
+// let captainFirstTEam = team.sorted(by: captainFirstSorted)
+// print(captainFirstTEam)
 
-print(captainFirstTEam)
-
+let captainFirstTeam = team.sorted(by: { (name1: String, name2: String) -> Bool in
+    if name1 == "Suzanne" {
+        return true
+    } else if name2 == "Suzanne" {
+        return false
+    } else {
+        return name1 < name2
+    }
+})
+print(captainFirstTeam)
