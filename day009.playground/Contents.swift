@@ -45,13 +45,57 @@ func captainFirstSorted(name1: String, name2: String) -> Bool {
 // let captainFirstTEam = team.sorted(by: captainFirstSorted)
 // print(captainFirstTEam)
 
-let captainFirstTeam = team.sorted(by: { (name1: String, name2: String) -> Bool in
-    if name1 == "Suzanne" {
+// Full version
+// let captainFirstTeam = team.sorted(by: { (name1: String, name2: String) -> Bool in
+//    if name1 == "Suzanne" {
+//        return true
+//    } else if name2 == "Suzanne" {
+//        return false
+//    } else {
+//        return name1 < name2
+//    }
+// })
+
+// Removing params and return type
+// let captainFirstTeam = team.sorted(by: { a, b in
+//    if a == "Suzanne" {
+//        return true
+//    } else if b == "Suzanne" {
+//        return false
+//    } else {
+//        return a < b
+//    }
+// })
+
+// trailing closure
+// let captainFirstTeam = team.sorted { a, b in
+//    if a == "Suzanne" {
+//        return true
+//    } else if b == "Suzanne" {
+//        return false
+//    } else {
+//        return a < b
+//    }
+// }
+
+// no param names
+let captainFirstTeam = team.sorted {
+    if $0 == "Suzanne" {
         return true
-    } else if name2 == "Suzanne" {
+    } else if $1 == "Suzanne" {
         return false
     } else {
-        return name1 < name2
+        return $0 < $1
     }
-})
+}
+
+let reverseTeam = team.sorted { $0 > $1 }
+
 print(captainFirstTeam)
+print(reverseTeam)
+
+let tOnly = team.filter { $0.hasPrefix("T") }
+print(tOnly)
+
+let upperCasedTeam = team.map {$0.uppercased()}
+print(upperCasedTeam)
