@@ -97,5 +97,36 @@ print(reverseTeam)
 let tOnly = team.filter { $0.hasPrefix("T") }
 print(tOnly)
 
-let upperCasedTeam = team.map {$0.uppercased()}
+let upperCasedTeam = team.map { $0.uppercased() }
 print(upperCasedTeam)
+
+func makeArray(size: Int, using generator: () -> Int) -> [Int] {
+    var numbers = [Int]()
+
+    for _ in 0 ..< size {
+        numbers.append(generator())
+    }
+
+    return numbers
+}
+
+let newRolls = makeArray(size: 50) { Int.random(in: 1 ... 20) }
+print(newRolls)
+
+func doImportantwork(first: () -> Void, second: () -> Void, third: () -> Void) {
+    print("First work")
+    first()
+    print("Second work")
+    second()
+    print("Third work")
+    third()
+    print("Done")
+}
+
+doImportantwork {
+    print("This is the actual first work")
+} second: {
+    print("This is the actual second work")
+} third: {
+    print("This is the actual third work ,")
+}
