@@ -119,3 +119,107 @@ extension Book {
 }
 
 let lotr = Book(title: "The Lord of the Rings", pageCount: 1000, readingHours: 24)
+
+extension Collection {
+    var isNotEmpty: Bool {
+        !isEmpty
+    }
+}
+
+let guests = ["Mario", "Luigi", "Yoshi"]
+print(guests.isNotEmpty)
+
+protocol Person {
+    var name: String { get }
+    func sayHello()
+}
+
+extension Person {
+    func sayHello() {
+        print("Hello, I'm \(name)!")
+    }
+}
+
+struct Employee: Person {
+    let name: String
+}
+
+struct Manager: Person {
+    let name: String
+    func sayHello() {
+        print("Hello, I'm manager \(name)!")
+    }
+}
+
+let taylor = Employee(name: "Taylor Swift")
+taylor.sayHello()
+
+let john = Manager(name: "John Appleseed")
+john.sayHello()
+
+
+//Checkpoint 8
+
+protocol Building {
+    var type: String { get }
+    var numberOfRooms: Int { get }
+    var cost: Int { get set}
+    var estateAgent: String { get set}
+    func getSalesSummary()
+}
+
+extension Building {
+    func getSalesSummary() {
+        print("\(type) with \(numberOfRooms) rooms is for sale for \(cost) and is being sold by \(estateAgent)")
+    }
+}
+
+struct House: Building {
+    let type = "House"
+    let numberOfRooms: Int
+    var cost: Int
+    var estateAgent: String
+}
+
+struct Office: Building {
+    let type = "Office"
+    let numberOfRooms: Int
+    var cost: Int
+    var estateAgent: String
+}
+
+let house = House(numberOfRooms: 3, cost: 500_000, estateAgent: "John Appleseed")
+let office = Office(numberOfRooms: 2, cost: 1_000_000, estateAgent: "Taylor Swift")
+
+house.getSalesSummary()
+office.getSalesSummary()
+
+//extra
+
+extension Numeric {
+    //Use Self to make sure the same datatype as the current self is returned
+    func squared() -> Self {
+        self * self
+    }
+}
+
+let wholeNumber = 5
+print(wholeNumber.squared())
+
+struct User: Comparable {
+    let name: String
+    
+    static func <(lhs: User, rhs: User) -> Bool {
+        lhs.name < rhs.name
+    }
+}
+
+
+
+let user1 = User(name: "Link")
+let user2 = User(name: "Zelda")
+
+print(user1 == user2)
+print(user1 != user2)
+print(user1 <= user2)
+
