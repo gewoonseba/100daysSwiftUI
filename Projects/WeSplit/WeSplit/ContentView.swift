@@ -10,14 +10,19 @@ import SwiftUI
 struct ContentView: View {
   @FocusState private var amountIsfocused: Bool
 
-  @State private var checkAmount = 0.0
+  @State private var checkAmount: Double?
   @State private var numberOfPeople = 0
   @State private var tipPercentage = 20
 
   private let availablePercentages = 0...100
   
   var totalIncludingTip: Double {
-    checkAmount + (checkAmount * Double(tipPercentage) / 100)
+    if let checkAmount {
+      return checkAmount + (checkAmount * Double(tipPercentage) / 100)
+    } else {
+      return 0
+    }
+    
   }
 
   var totalPerPerson: Double {
@@ -36,6 +41,11 @@ struct ContentView: View {
               .keyboardType(.decimalPad)
               .multilineTextAlignment(.trailing)
               .focused($amountIsfocused)
+              .onChange(of: amountIsfocused) {
+                if amountIsfocused {
+                  $checkAmount.wrappedValue = nil
+                }
+              }
           }
           Picker("Number of people", selection: $numberOfPeople) {
             ForEach(2 ..< 100) {
