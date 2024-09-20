@@ -7,45 +7,26 @@
 
 import SwiftUI
 
-enum TemperatureUnit: CaseIterable, Identifiable {
-  case Celsius
-  case Farenheit
-  case Kelvin
-
-  var id: Self { self }
-
-  var displayName: String {
-    switch self {
-    case .Celsius: return "°C"
-    case .Farenheit: return "°F"
-    case .Kelvin: return "°K"
-    }
-  }
-}
-
 struct ContentView: View {
-  @State private var input: Double = 0
-  @State private var inputUnit: TemperatureUnit = .Celsius
-  @State private var outputUnit: TemperatureUnit = .Celsius
-  private var output: Double {
-    let inputInKelvin = convertToKelvin(value: input, unit: inputUnit)
-    return convertToTargetUnit(valueInKelvin: inputInKelvin, targetUnit: outputUnit)
+  @State private var rawInput: Double = 0
+  @State private var inputUnit: UnitTemperature = .celsius
+  private let tempUnitOptions: [UnitTemperature] = [.celsius, .fahrenheit, .kelvin]
+  private var inputMeasurement: Measurement<UnitTemperature> {
+    Measurement(value: rawInput, unit: inputUnit)
   }
 
-  func convertToKelvin(value: Double, unit: TemperatureUnit) -> Double {
-    switch unit {
-    case .Celsius: return value + 273.15
-    case .Farenheit: return (value + 459.67) * 5 / 9
-    case .Kelvin: return value
-    }
+  @State private var outputUnit: UnitTemperature = .celsius
+  private var output: Measurement<UnitTemperature> {
+    inputMeasurement.converted(to: outputUnit)
   }
-
-  func convertToTargetUnit(valueInKelvin value: Double, targetUnit unit: TemperatureUnit) -> Double {
-    switch unit {
-    case .Celsius: return value - 273.15
-    case .Farenheit: return (value * 9 / 5) - 459.67
-    case .Kelvin: return value
-    }
+  
+  func formatTemperature(_ temperature: Measurement<UnitTemperature>) -> String {
+      let formatter = MeasurementFormatter()
+      formatter.unitOptions = .providedUnit // This ensures we use the unit of the measurement
+      formatter.numberFormatter.maximumFractionDigits = 2
+      formatter.numberFormatter.minimumFractionDigits = 0 // This allows whole numbers to be displayed without decimal places
+      
+      return formatter.string(from: temperature)
   }
 
   var body: some View {
@@ -53,12 +34,12 @@ struct ContentView: View {
       Form {
         Section("Input") {
           HStack {
-            TextField("Input", value: $input, format: .number)
+            TextField("Input", value: $rawInput, format: .number)
               .keyboardType(.numberPad)
             Spacer()
             Picker("", selection: $inputUnit) {
-              ForEach(TemperatureUnit.allCases) {
-                Text(String(describing: $0.displayName))
+              ForEach(tempUnitOptions, id: \.self) { unit in
+                Text(unit.symbol).tag(unit)
               }
             }
           }
@@ -66,15 +47,15 @@ struct ContentView: View {
 
         Section("Output") {
           VStack {
-            Text(String(output))
+            Text(formatTemperature(output))
               .font(.largeTitle)
               .fontWeight(.bold)
               .multilineTextAlignment(.center)
               .padding(.all, 20)
 
             Picker("", selection: $outputUnit) {
-              ForEach(TemperatureUnit.allCases) {
-                Text(String(describing: $0.displayName))
+              ForEach(tempUnitOptions, id: \.self) { unit in
+                Text(unit.symbol).tag(unit)
               }
             }
             .pickerStyle(.segmented)
