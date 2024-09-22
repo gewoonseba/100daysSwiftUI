@@ -8,17 +8,86 @@
 import SwiftUI
 
 struct ContentView: View {
-  fileprivate func delete() {
-    print("Now deleting")
-  }
+  @State private var countries = ["Estonia", "France", "Germany", "Ireland", "Italy", "Nigeria", "Poland", "Spain", "UK", "Ukraine", "US"].shuffled()
+  @State private var correctAnswer = Int.random(in: 0 ... 2)
 
-  @State private var showingAlert = false
+  @State private var showingScore = false
+  @State private var scoreTitle = ""
+
+  @State private var rotationAmount = 0.0
 
   var body: some View {
-    VStack {
-      Image(systemName: "globe")
-        .foregroundStyle(.blue)
-      Text("Hello, World!")
+    ZStack {
+      RadialGradient(stops: [
+        .init(color: Color(red: 0.1, green: 0.2, blue: 0.45), location: 0),
+        .init(color: Color(red: 0.76, green: 0.15, blue: 0.26), location: 3.5),
+      ], center: .top, startRadius: 200, endRadius: 400)
+        .ignoresSafeArea()
+
+      VStack {
+        Spacer()
+        Text("Guess the Flag")
+          .font(.largeTitle.bold())
+          .foregroundStyle(.white)
+
+        Spacer()
+        Spacer()
+        Text("Score: ??")
+          .font(.title)
+          .foregroundStyle(.white)
+
+        Spacer()
+
+        VStack(spacing: 16) {
+          VStack {
+            Text("Tap the flag of")
+              .font(.subheadline.weight(.regular))
+              .foregroundStyle(.secondary)
+            Text(countries[correctAnswer])
+              .font(.largeTitle.weight(.semibold))
+          }
+
+          ForEach(0 ..< 3) { number in
+            Button {
+              flagTapped(number)
+            } label: {
+              Image(countries[number])
+                .clipShape(.rect(cornerRadius: 6))
+                .shadow(radius: 12)
+                .rotation3DEffect(
+                  .degrees(rotationAmount),
+                  axis: (x: 1, y: 0, z: 0)
+                )
+            }
+          }
+        }.frame(maxWidth: .infinity)
+          .padding(.vertical, 32)
+          .background(.thinMaterial)
+          .clipShape(.rect(cornerRadius: 20))
+      }.padding()
+    }
+    .alert(scoreTitle, isPresented: $showingScore) {
+      Button("Continue", action: resetGame)
+    } message: {
+      Text("Your score is ???")
+    }
+  }
+
+  func flagTapped(_ number: Int) {
+    if number == correctAnswer {
+      scoreTitle = "Correct!"
+    } else {
+      scoreTitle = "Wrong"
+    }
+    showingScore = true
+    rotationAmount = 0
+  }
+
+  func resetGame() {
+    countries.shuffle()
+    correctAnswer = Int.random(in: 0 ... 2)
+    withAnimation(.easeInOut(duration: 1)) {
+      rotationAmount += 360
     }
   }
 }
