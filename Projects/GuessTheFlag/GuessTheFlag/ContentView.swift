@@ -7,12 +7,47 @@
 
 import SwiftUI
 
+struct FlagImage: View {
+  var imageName: String
+  var rotationAmount: Double
+
+  var body: some View {
+    Image(imageName)
+      .clipShape(.rect(cornerRadius: 6))
+      .shadow(radius: 12)
+      .rotation3DEffect(
+        .degrees(rotationAmount),
+        axis: (x: 1, y: 0, z: 0)
+      )
+  }
+}
+
+struct Title: ViewModifier {
+  func body(content: Content) -> some View {
+    content
+      .font(.largeTitle.bold())
+      .foregroundStyle(.white)
+  }
+}
+
+extension View {
+  func title() -> some View {
+    modifier(Title())
+  }
+}
+
 struct ContentView: View {
   @State private var countries = ["Estonia", "France", "Germany", "Ireland", "Italy", "Nigeria", "Poland", "Spain", "UK", "Ukraine", "US"].shuffled()
   @State private var correctAnswer = Int.random(in: 0 ... 2)
 
+  @State private var score = 0
   @State private var showingScore = false
   @State private var scoreTitle = ""
+  @State private var scoreMessage = ""
+
+  private static let maxRounds = 8
+  @State private var roundsLeft = maxRounds
+  @State private var showingFinalScore = false
 
   @State private var rotationAmount = 0.0
 
@@ -27,14 +62,16 @@ struct ContentView: View {
       VStack {
         Spacer()
         Text("Guess the Flag")
-          .font(.largeTitle.bold())
-          .foregroundStyle(.white)
+          .title()
 
         Spacer()
         Spacer()
-        Text("Score: ??")
+        Text("Score: \(score)")
           .font(.title)
           .foregroundStyle(.white)
+        Text("Rounds left: \(roundsLeft)")
+          .foregroundStyle(.white)
+          .opacity(0.6)
 
         Spacer()
 
@@ -51,13 +88,7 @@ struct ContentView: View {
             Button {
               flagTapped(number)
             } label: {
-              Image(countries[number])
-                .clipShape(.rect(cornerRadius: 6))
-                .shadow(radius: 12)
-                .rotation3DEffect(
-                  .degrees(rotationAmount),
-                  axis: (x: 1, y: 0, z: 0)
-                )
+              FlagImage(imageName: countries[number], rotationAmount: rotationAmount)
             }
           }
         }.frame(maxWidth: .infinity)
@@ -67,28 +98,55 @@ struct ContentView: View {
       }.padding()
     }
     .alert(scoreTitle, isPresented: $showingScore) {
-      Button("Continue", action: resetGame)
+      Button("Continue", action: startNextRound)
     } message: {
-      Text("Your score is ???")
+      Text(scoreMessage)
+    }
+    .alert("Game over", isPresented: $showingFinalScore) {
+      Button("Play again", action: resetGame)
+    } message: {
+      Text("Thank you for playing. Your final score is \(score).")
     }
   }
 
   func flagTapped(_ number: Int) {
     if number == correctAnswer {
       scoreTitle = "Correct!"
+      score += 1
+      scoreMessage = "You got it! You're score is \(score)"
     } else {
-      scoreTitle = "Wrong"
+      scoreTitle = "Oops.."
+      scoreMessage = "That's the flag of \(countries[number])"
     }
     showingScore = true
     rotationAmount = 0
   }
 
-  func resetGame() {
+  func startNextRound() {
+    roundsLeft -= 1
+    if roundsLeft <= 0 {
+      endGame()
+    } else {
+      continueGame()
+    }
+  }
+
+  func endGame() {
+    showingFinalScore = true
+  }
+
+  func continueGame() {
     countries.shuffle()
     correctAnswer = Int.random(in: 0 ... 2)
     withAnimation(.easeInOut(duration: 1)) {
       rotationAmount += 360
     }
+  }
+
+  func resetGame() {
+    roundsLeft = ContentView.maxRounds
+    score = 0
+    continueGame()
   }
 }
 

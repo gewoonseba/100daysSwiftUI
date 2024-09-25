@@ -64,6 +64,7 @@ struct ContentView: View {
         Section("Payment details") {
           HStack {
             Text("Total including tip")
+              .foregroundStyle(tipPercentage  == 0 ? .red : .primary)
             Spacer()
             Text(totalIncludingTip, format: .currency(code: Locale.current.currency?.identifier ?? "USD"))
           }
