@@ -22,30 +22,38 @@ enum GameOption {
 }
 
 enum WinCondition {
-  case win, lose
+  case win, lose, draw
 }
 
 struct ContentView: View {
-  
   private var winConditions: [WinCondition] = [.win, .lose]
   @State private var selectedWinCondition: WinCondition = .lose
-  
+
   private var options: [GameOption] = [.rock, .paper, .scissors]
-  @State private var selectedOption: GameOption = .rock
-  
-  @State private var userOption: GameOption = .rock
-  
+  @State private var gameOption: GameOption = .rock
+  @State private var playerScore = 0
+  @State private var gamesPlayed = 0
+  @State private var showingFinalScore = false
+
   var body: some View {
     VStack {
-      Text("I want you to \(selectedWinCondition) from")
-      Text("\(selectedOption.image())")
+      Spacer()
+      HStack {
+        Text("I want you to")
+        Text("\(selectedWinCondition)")
+          .foregroundStyle(selectedWinCondition == . lose ? .red : .green)
+          .fontWeight(.bold)
+        Text("from")
+      }
+      Text("\(gameOption.image())")
         .font(.largeTitle)
+      Text("Score: \(playerScore)")
       Spacer()
       HStack {
         Spacer()
         ForEach(options, id: \.self) { option in
           Button(action: {
-            userOption = option 
+            evaluateResult(option)
           }) {
             Text(option.image())
               .font(.title)
@@ -53,9 +61,47 @@ struct ContentView: View {
           Spacer()
         }
       }
-      
     }
     .padding()
+    .alert("Final Score", isPresented: $showingFinalScore) {
+      Button("Replay") {
+        gamesPlayed = 0
+        playerScore = 0
+        nextRound()
+      }
+    } message: {
+      Text("Your final score is \(playerScore) / \(gamesPlayed)")
+    }
+  }
+
+  func evaluateResult(_ option: GameOption) {
+    let playerResult = getPlayerResult(player: option, game: gameOption)
+    print(playerResult)
+    if playerResult == selectedWinCondition {
+      playerScore += 1
+    }
+    gamesPlayed += 1
+    nextRound()
+  }
+
+  func nextRound() {
+    if gamesPlayed >= 10 {
+      showingFinalScore = true
+    }
+    gameOption = options.randomElement() ?? .paper
+    selectedWinCondition = winConditions.randomElement() ?? .lose
+  }
+}
+
+func getPlayerResult(player: GameOption, game: GameOption) -> WinCondition {
+  switch (player, game) {
+  case (.rock, .paper): return .lose
+  case (.rock, .scissors): return .win
+  case (.paper, .rock): return .win
+  case (.paper, .scissors): return .lose
+  case (.scissors, .rock): return .lose
+  case (.scissors, .paper): return .win
+  default: return .draw
   }
 }
 
