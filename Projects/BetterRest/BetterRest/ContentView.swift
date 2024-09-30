@@ -8,30 +8,53 @@ import CoreML
 import SwiftUI
 
 struct ContentView: View {
-  @State private var wakeUp = Date.now
+  @State private var wakeUp = defaultWakeTime
   @State private var sleepAmount = 8.0
   @State private var coffeeAmount = 1
-
+  
+  @State private var alerTitle = ""
+  @State private var alertMessage = ""
+  @State private var showAlert = false
+  
+  static var defaultWakeTime: Date {
+    var components = DateComponents()
+    components.hour = 7
+    components.minute = 0
+    return Calendar.current.date(from: components) ?? .now
+  }
+  
   var body: some View {
     NavigationStack {
-      VStack {
-        Text("When do you want to wake up?")
-          .font(.headline)
-        DatePicker("Plese enter a time", selection: $wakeUp, displayedComponents: .hourAndMinute)
-          .labelsHidden()
+      Form {
+        HStack {
+          Text("When do you want to wake up?")
+            .font(.headline)
+          Spacer()
+          DatePicker("Plese enter a time", selection: $wakeUp, displayedComponents: .hourAndMinute)
+            .labelsHidden()
+        }
+        
 
-        Text("Desired amount of sleep")
-          .font(.headline)
-        Stepper("\(sleepAmount.formatted()) hours", value: $sleepAmount, in: 4...12, step: 0.25)
+        VStack(alignment: .leading, spacing: 0) {
+          Text("Desired amount of sleep")
+            .font(.headline)
+          Stepper("\(sleepAmount.formatted()) hours", value: $sleepAmount, in: 4...12, step: 0.25)
+        }
 
-        Text("Daily coffee intake")
-          .font(.headline)
-
-        Stepper("\(coffeeAmount) cups", value: $coffeeAmount, in: 0...20)
+        VStack(alignment: .leading, spacing: 0) {
+          Text("Daily coffee intake")
+            .font(.headline)
+          Stepper("^[\(coffeeAmount) cup](inflect: true)", value: $coffeeAmount, in: 0...20)
+        }
       }
       .navigationTitle("BetterRest")
       .toolbar {
         Button("Calculate", action: calculateBedtime)
+      }
+      .alert(alerTitle, isPresented: $showAlert) {
+        Button("OK") {}
+      } message: {
+        Text(alertMessage)
       }
     }
   }
@@ -48,11 +71,15 @@ struct ContentView: View {
       
       let prediction = try model.prediction(wake: secondsFromMidnight, estimatedSleep: sleepAmount, coffee: Double(coffeeAmount))
       
-      //video timestamp 09:07
-      
+      let sleepTime = wakeUp - prediction.actualSleep
+    
+      alerTitle = "Your ideal bedtime is..."
+      alertMessage = sleepTime.formatted(date: .omitted, time: .shortened)
     } catch {
-      
+      alerTitle = "Error"
+      alertMessage = "There was an issue caclulating your bedtime"
     }
+    showAlert = true
   }
 }
 
