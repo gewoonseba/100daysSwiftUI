@@ -16,6 +16,8 @@ struct ContentView: View {
   @State private var alertMessage = ""
   @State private var showAlert = false
   
+  @State private var testTExt = ""
+  
   static var defaultWakeTime: Date {
     var components = DateComponents()
     components.hour = 7
@@ -33,6 +35,11 @@ struct ContentView: View {
         Section("Desired amount of sleep") {
           Stepper("\(sleepAmount.formatted()) hours", value: $sleepAmount, in: 4...12, step: 0.25)
         }
+        
+        TextField(
+          "User name (email address)",
+          text: $testTExt
+      )
         
         Section("Daily coffee intake") {
           Stepper("^[\(coffeeAmount) cup](inflect: true)", value: $coffeeAmount, in: 0...20)
