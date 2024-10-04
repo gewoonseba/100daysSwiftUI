@@ -61,6 +61,16 @@ struct ContentView: View {
       wordError(title: "Word not real", message: "That's not a real word.")
       return
     }
+    
+    guard isLongEnough(answer) else {
+      wordError(title: "Word not long enough", message: "Try more than 3 letters.")
+      return
+    }
+    
+    guard isNotStartingWord(answer) else {
+      wordError(title: "Word equal to starting word", message: "That's just the starting word!")
+      return
+    }
 
     withAnimation {
       usedWords.insert(answer, at: 0)
@@ -104,6 +114,14 @@ struct ContentView: View {
     let range = NSRange(location: 0, length: word.utf16.count)
     let misspelledRange = checker.rangeOfMisspelledWord(in: word, range: range, startingAt: 0, wrap: false, language: "en")
     return misspelledRange.location == NSNotFound
+  }
+  
+  func isLongEnough(_ word: String) -> Bool {
+    return word.count >= 3
+  }
+  
+  func isNotStartingWord(_ word: String) -> Bool {
+    return word != rootWord
   }
 
   func wordError(title: String, message: String) {
