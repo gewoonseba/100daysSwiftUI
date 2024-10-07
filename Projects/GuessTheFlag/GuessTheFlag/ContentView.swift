@@ -9,16 +9,20 @@ import SwiftUI
 
 struct FlagImage: View {
   var imageName: String
-  var rotationAmount: Double
+  var rotation: Double
+  var opacity: Double
 
   var body: some View {
     Image(imageName)
       .clipShape(.rect(cornerRadius: 6))
       .shadow(radius: 12)
       .rotation3DEffect(
-        .degrees(rotationAmount),
-        axis: (x: 1, y: 0, z: 0)
+        .degrees(rotation),
+        axis: (x: 0, y: 1, z: 0)
       )
+      .animation(.default, value: rotation)
+      .opacity(opacity)
+      .animation(.default, value: opacity)
   }
 }
 
@@ -36,6 +40,11 @@ extension View {
   }
 }
 
+struct FlagAnimationState = {
+  var rotation : Double = 0
+  var opacity : Double = 0
+}
+
 struct ContentView: View {
   @State private var countries = ["Estonia", "France", "Germany", "Ireland", "Italy", "Nigeria", "Poland", "Spain", "UK", "Ukraine", "US"].shuffled()
   @State private var correctAnswer = Int.random(in: 0 ... 2)
@@ -50,6 +59,10 @@ struct ContentView: View {
   @State private var showingFinalScore = false
 
   @State private var rotationAmount = 0.0
+  @State private var selectedFlag = 0
+  @State private var flagAnimationStates : [FlagAnimationState] = [
+    FlagAnimationState(), FlagAnimationState(), FlagAnimationState()
+  ]
 
   var body: some View {
     ZStack {
@@ -88,7 +101,8 @@ struct ContentView: View {
             Button {
               flagTapped(number)
             } label: {
-              FlagImage(imageName: countries[number], rotationAmount: rotationAmount)
+              //todo: pass in animation states from state so they can be animated
+              FlagImage(imageName: countries[number], rotation: flagAnimationStates, opacity: 0.5)
             }
           }
         }.frame(maxWidth: .infinity)
@@ -110,6 +124,7 @@ struct ContentView: View {
   }
 
   func flagTapped(_ number: Int) {
+    selectedFlag = number
     if number == correctAnswer {
       scoreTitle = "Correct!"
       score += 1
@@ -119,7 +134,6 @@ struct ContentView: View {
       scoreMessage = "That's the flag of \(countries[number])"
     }
     showingScore = true
-    rotationAmount = 0
   }
 
   func startNextRound() {
