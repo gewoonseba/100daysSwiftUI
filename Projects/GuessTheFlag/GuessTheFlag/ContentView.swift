@@ -9,20 +9,22 @@ import SwiftUI
 
 struct FlagImage: View {
   var imageName: String
-  var rotation: Double
-  var opacity: Double
+  var flagAnimationState: FlagAnimationState
 
   var body: some View {
     Image(imageName)
       .clipShape(.rect(cornerRadius: 6))
       .shadow(radius: 12)
       .rotation3DEffect(
-        .degrees(rotation),
+        .degrees(flagAnimationState.rotation),
         axis: (x: 0, y: 1, z: 0)
       )
-      .animation(.default, value: rotation)
-      .opacity(opacity)
-      .animation(.default, value: opacity)
+      .animation(.bouncy, value: flagAnimationState.rotation)
+      .opacity(flagAnimationState.opacity)
+      .animation(.linear, value: flagAnimationState.opacity)
+      .scaleEffect(flagAnimationState.scale)
+      .animation(.smooth, value: flagAnimationState.scale)
+      
   }
 }
 
@@ -40,9 +42,10 @@ extension View {
   }
 }
 
-struct FlagAnimationState = {
-  var rotation : Double = 0
-  var opacity : Double = 0
+struct FlagAnimationState {
+  var rotation: Double = 0
+  var opacity: Double = 1
+  var scale: Double = 1
 }
 
 struct ContentView: View {
@@ -60,8 +63,8 @@ struct ContentView: View {
 
   @State private var rotationAmount = 0.0
   @State private var selectedFlag = 0
-  @State private var flagAnimationStates : [FlagAnimationState] = [
-    FlagAnimationState(), FlagAnimationState(), FlagAnimationState()
+  @State private var flagAnimationStates: [FlagAnimationState] = [
+    FlagAnimationState(), FlagAnimationState(), FlagAnimationState(),
   ]
 
   var body: some View {
@@ -101,8 +104,7 @@ struct ContentView: View {
             Button {
               flagTapped(number)
             } label: {
-              //todo: pass in animation states from state so they can be animated
-              FlagImage(imageName: countries[number], rotation: flagAnimationStates, opacity: 0.5)
+              FlagImage(imageName: countries[number], flagAnimationState: flagAnimationStates[number])
             }
           }
         }.frame(maxWidth: .infinity)
@@ -125,6 +127,7 @@ struct ContentView: View {
 
   func flagTapped(_ number: Int) {
     selectedFlag = number
+    animateFlags()
     if number == correctAnswer {
       scoreTitle = "Correct!"
       score += 1
@@ -152,15 +155,32 @@ struct ContentView: View {
   func continueGame() {
     countries.shuffle()
     correctAnswer = Int.random(in: 0 ... 2)
-    withAnimation(.easeInOut(duration: 1)) {
-      rotationAmount += 360
-    }
+    resetFlags()
   }
 
   func resetGame() {
     roundsLeft = ContentView.maxRounds
     score = 0
     continueGame()
+  }
+
+  func animateFlags() {
+    for i in 0 ..< 3 {
+      if i == selectedFlag {
+        flagAnimationStates[i].rotation += 360
+        flagAnimationStates[i].scale = 1.2
+      } else {
+        flagAnimationStates[i].opacity = 0.25
+        flagAnimationStates[i].scale = 0.7
+      }
+    }
+  }
+  
+  func resetFlags() {
+    for i in 0 ..< 3 {
+      flagAnimationStates[i].opacity = 1
+      flagAnimationStates[i].scale = 1
+    }
   }
 }
 
