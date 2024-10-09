@@ -7,33 +7,22 @@
 
 import SwiftUI
 
-@Observable
-class User {
-    var firstName = "Bilbo"
-    var lastName = "Baggins"
-}
-
-struct SecondView: View {
-    let name: String
-    
-    @Environment(\.dismiss) var dismiss
-    
-    var body: some View {
-        Text("Hello \(name)")
-        Button("Dismiss") {
-            dismiss()
-        }
-    }
+struct User : Codable {
+    let firstName: String
+    let lastName: String
 }
 
 struct ContentView: View {
-    @State private var showingSheet = false
+    @State private var user = User(firstName: "Taylor", lastName: "Swift")
+
+
     var body: some View {
-        Button("Show Sheet") {
-            showingSheet.toggle()
-        }
-        .sheet(isPresented: $showingSheet) {
-            SecondView(name: "Sebastian")
+        Button("Save User") {
+            let encoder = JSONEncoder()
+
+            if let data = try? encoder.encode(user) {
+                UserDefaults.standard.set(data, forKey: "UserData")
+            }
         }
     }
 }
