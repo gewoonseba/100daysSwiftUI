@@ -15,10 +15,10 @@ struct CrewMember {
 struct MissionView: View {
     let mission: Mission
     let crew: [CrewMember]
-    
+
     init(mission: Mission, astronauts: [String: Astronaut]) {
         self.mission = mission
-        
+
         self.crew = mission.crew.map { member in
             if let astronaut = astronauts[member.name] {
                 return CrewMember(role: member.role, astronaut: astronaut)
@@ -47,17 +47,32 @@ struct MissionView: View {
                     Text(mission.description)
                 }
                 .padding(.horizontal)
-                
-                HStack {
-                    ForEach(crew, id: \.role) { crewMember in
-                        NavigationLink {
-                            Text("\(crewMember.astronaut.displayName) details")
-                        } label: {
-                            HStack {
-                                Image(crewMember.astronaut.id)
-                                    .resizable()
-                                    .frame(width: 104, height: 72)
-                                    .clipShape(.capsule)
+
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack {
+                        ForEach(crew, id: \.role) { crewMember in
+                            NavigationLink {
+                                Text("Astronaut details")
+                            } label: {
+                                HStack {
+                                    Image(crewMember.astronaut.id)
+                                        .resizable()
+                                        .frame(width: 104, height: 72)
+                                        .clipShape(.capsule)
+                                        .overlay(
+                                            Capsule()
+                                                .strokeBorder(.white, lineWidth: 1)
+                                        )
+
+                                    VStack(alignment: .leading) {
+                                        Text(crewMember.astronaut.name)
+                                            .foregroundStyle(.white)
+                                            .font(.headline)
+                                        Text(crewMember.role)
+                                            .foregroundStyle(.white.opacity(0.5))
+                                    }
+                                }
+                                .padding(.horizontal)
                             }
                         }
                     }
