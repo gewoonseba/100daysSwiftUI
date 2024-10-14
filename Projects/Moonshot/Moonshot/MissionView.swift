@@ -29,7 +29,7 @@ struct MissionView: View {
     }
 
     var body: some View {
-        ScrollView {
+    ScrollView {
             VStack {
                 Image(mission.image)
                     .resizable()
@@ -40,11 +40,21 @@ struct MissionView: View {
                     .padding(.vertical)
 
                 VStack(alignment: .leading) {
+                    Rectangle()
+                        .frame(height: 2)
+                        .foregroundStyle(.lightBackground)
+                        .padding(.vertical)
                     Text("Mission Highlights")
                         .font(.title.bold())
                         .padding(.bottom, 5)
 
                     Text(mission.description)
+                    Rectangle()
+                        .frame(height: 2)
+                        .foregroundStyle(.lightBackground)
+                        .padding(.vertical)
+                    Text("Crew")
+                        .font(.title.bold())
                 }
                 .padding(.horizontal)
 
@@ -52,33 +62,31 @@ struct MissionView: View {
                     HStack {
                         ForEach(crew, id: \.role) { crewMember in
                             NavigationLink {
-                                Text("Astronaut details")
+                                AstronautView(astronaut: crewMember.astronaut)
                             } label: {
-                                HStack {
+                                HStack(alignment: .center, spacing: 2) {
                                     Image(crewMember.astronaut.id)
                                         .resizable()
                                         .frame(width: 104, height: 72)
-                                        .clipShape(.capsule)
-                                        .overlay(
-                                            Capsule()
-                                                .strokeBorder(.white, lineWidth: 1)
-                                        )
+                                        .clipShape(.circle)
+                                        .overlay(content: { Circle().stroke(.lightBackground, lineWidth: 2) })
+                                        .shadow(radius: 10)
 
                                     VStack(alignment: .leading) {
                                         Text(crewMember.astronaut.name)
                                             .foregroundStyle(.white)
                                             .font(.headline)
                                         Text(crewMember.role)
+                                            .bold()
                                             .foregroundStyle(.white.opacity(0.5))
                                     }
                                 }
-                                .padding(.horizontal)
+                                .padding()
                             }
                         }
                     }
                 }
             }
-            .padding()
         }
         .navigationTitle(mission.displayName)
         .navigationBarTitleDisplayMode(.inline)
