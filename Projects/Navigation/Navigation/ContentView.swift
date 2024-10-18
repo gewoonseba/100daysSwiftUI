@@ -9,30 +9,29 @@ import SwiftUI
 
 struct DetailView: View {
     var number: Int
+    
+    @Binding var path: [Int]
 
     var body: some View {
-        Text("Detail View \(number)")
-    }
-
-    init(number: Int) {
-        self.number = number
-        print("Creating detail view \(number)")
+        NavigationLink("Go to Random Number", value: Int.random(in: 1 ... 1000))
+            .navigationTitle("Number: \(number)")
+            .toolbar {
+                Button("Home") {
+                    path.removeAll()
+                }
+            }
     }
 }
 
 struct ContentView: View {
+    @State private var pathStore = PathStore()
+
     var body: some View {
-        NavigationStack {
-            List(0 ..< 100) { i in
-                NavigationLink("Select \(i)", value: i)
-                NavigationLink("String \(i)", value: "abc-\(i)")
-            }
-            .navigationDestination(for: Int.self) { selection in
-                Text("You selected \(selection)")
-            }
-            .navigationDestination(for: String.self) { selection in
-                Text("Navigated to string \(selection)")
-            }
+        NavigationStack(path: $pathStore.path) {
+            DetailView(number: 0, path: $pathStore.path)
+                .navigationDestination(for: Int.self) { i in
+                    DetailView(number: i,path: $pathStore.path)
+                }
         }
     }
 }
