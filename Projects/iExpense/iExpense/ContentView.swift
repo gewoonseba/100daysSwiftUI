@@ -58,7 +58,6 @@ struct ExpenseView: View {
 
 struct ContentView: View {
     @State private var expenses = Expenses()
-    @State private var showingAddExpense = false
 
     var body: some View {
         NavigationStack {
@@ -70,22 +69,20 @@ struct ContentView: View {
                         ExpenseView(item: $0)
                     }.onDelete(perform: removeItems)
                 }
-                
+
                 Section("Personal") {
                     ForEach(personalExpenses) {
                         ExpenseView(item: $0)
                     }.onDelete(perform: removeItems)
                 }
-                
             }
             .navigationTitle("iExpense")
             .toolbar {
-                Button("Add expense", systemImage: "plus") {
-                    showingAddExpense = true
+                NavigationLink {
+                    AddView(expenses: expenses)
+                } label: {
+                    Image(systemName: "plus")
                 }
-            }
-            .sheet(isPresented: $showingAddExpense) {
-                AddView(expenses: expenses)
             }
         }
     }
