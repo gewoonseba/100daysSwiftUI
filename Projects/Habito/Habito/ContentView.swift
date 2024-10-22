@@ -23,8 +23,14 @@ struct ContentView: View {
                 .foregroundStyle(.secondary)
             }
             List {
-                ForEach($userHabits.habits) { habit in
-                    HabitRow(habit: habit)
+                //By adding the $ sign in the foreach, there is created a binding for each habit
+                ForEach($userHabits.habits) { $habit in
+                    NavigationLink{
+                        HabitDetailView(habit: $habit)
+                    } label: {
+                        HabitRow(habit: $habit)
+                    }
+                    
                 }
                 .onDelete(perform: removeHabit)
             }
