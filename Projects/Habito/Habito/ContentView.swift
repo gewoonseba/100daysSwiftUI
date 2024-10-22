@@ -13,13 +13,22 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack {
+            if userHabits.habits.isEmpty {
+                HStack {
+                    Text("Add a new habit with the")
+                    Image(systemName: "plus")
+                    Text("button.")
+                }
+                .padding(.all, 40)
+                .foregroundStyle(.secondary)
+            }
             List {
                 ForEach($userHabits.habits) { habit in
                     HabitRow(habit: habit)
                 }
                 .onDelete(perform: removeHabit)
             }
-            .navigationTitle("Habits")
+            .navigationTitle("Habito")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -34,7 +43,7 @@ struct ContentView: View {
             }
         }
     }
-    
+
     func removeHabit(at offsets: IndexSet) {
         userHabits.habits.remove(atOffsets: offsets)
     }
