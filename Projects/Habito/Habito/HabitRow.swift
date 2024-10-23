@@ -16,13 +16,13 @@ struct HabitRow: View {
                 .font(.headline)
             Spacer()
             Text("\(habit.count)")
-            
                 .contentTransition(.numericText())
                 .padding(.horizontal)
                 .foregroundStyle(habit.count == 0 ? .secondary : .primary)
-            Stepper("Count \(habit.count)", value: $habit.count.animation(), in: 0...Int.max)
+            Stepper("Count \(habit.count)", value: $habit.count, in: 0...Int.max)
                 .labelsHidden()
         }
+        .animation(.default, value: habit.count)
     }
 }
 

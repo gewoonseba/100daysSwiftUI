@@ -10,6 +10,8 @@ import SwiftUI
 struct ContentView: View {
     @State private var userHabits = UserHabits()
     @State private var showAddHabit: Bool = false
+    
+    @State private var testHabit: Habit = .init(name: "Testing habit", description:"llala")
 
     var body: some View {
         NavigationStack {
@@ -23,7 +25,7 @@ struct ContentView: View {
                 .foregroundStyle(.secondary)
             }
             List {
-                //By adding the $ sign in the foreach, there is created a binding for each habit
+                //By adding the $ sign in the foreach, there is created a binding for each habit. These animations don't work.
                 ForEach($userHabits.habits) { $habit in
                     NavigationLink{
                         HabitDetailView(habit: $habit)

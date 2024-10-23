@@ -9,7 +9,7 @@ import Foundation
 
 @Observable
 class UserHabits {
-    var habits: [Habit] = [] {
+    var habits: [Habit] {
         didSet {
             if let encoded = try? JSONEncoder().encode(habits) {
                 UserDefaults.standard.set(encoded, forKey: "habits")
@@ -24,6 +24,6 @@ class UserHabits {
                 return
             }
         }
-        habits = []
+        self.habits = []
     }
 }

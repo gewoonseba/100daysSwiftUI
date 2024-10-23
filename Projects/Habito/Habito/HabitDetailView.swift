@@ -23,9 +23,10 @@ struct HabitDetailView: View {
                         .foregroundStyle(habit.count == 0 ? .secondary : .primary)
                         .padding(.vertical, 40)
 
-                    Stepper("Count \(habit.count)", value: $habit.count.animation(), in: 0 ... Int.max)
+                    Stepper("Count \(habit.count)", value: $habit.count, in: 0 ... Int.max)
                         .labelsHidden()
                 }
+                .animation(.default, value: habit.count) //explicitly animating habit.count instead of the binding keeps it working in child views
                 .frame(maxWidth: .infinity)
 
                 Spacer()
