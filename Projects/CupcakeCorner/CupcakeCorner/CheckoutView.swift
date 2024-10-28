@@ -12,6 +12,8 @@ struct CheckoutView: View {
     
     @State private var confirmationMessage = ""
     @State private var showingConfirmation = false
+    
+    @State private var showingError = false
 
     var body: some View {
         ScrollView {
@@ -43,6 +45,13 @@ struct CheckoutView: View {
         } message: {
             Text(confirmationMessage)
         }
+        .alert("Something went wrong", isPresented: $showingError) {
+            Button("OK") {
+                //ideally navigate back to home here
+            }
+        } message: {
+            Text("Please try agian later.")
+        }
         .scrollBounceBehavior(.basedOnSize)
     }
     
@@ -66,6 +75,8 @@ struct CheckoutView: View {
             
         } catch {
             print("Checkout failed: \(error.localizedDescription)")
+            showingError = true
+            
         }
     }
 }
