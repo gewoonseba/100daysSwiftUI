@@ -10,26 +10,41 @@ import SwiftUI
 @Observable
 class Order: Codable {
     static let types = ["Vanilla", "Strawberry", "Chocolate", "Rainbow"]
-
-    var type = 0
-    var quantity = 3
-
-    var specialRequestEnabled = false {
+    private static let storageKey = "savedOrder"
+    
+    var type: Int {
+        didSet { saveOrder() }
+    }
+    var quantity: Int {
+        didSet { saveOrder() }
+    }
+    var specialRequestEnabled: Bool {
         didSet {
+            saveOrder()
             if specialRequestEnabled == false {
                 extraFrosting = false
                 addSprinkles = false
             }
         }
     }
-
-    var extraFrosting = false
-    var addSprinkles = false
-
-    var name = ""
-    var streetAddress = ""
-    var city = ""
-    var zip = ""
+    var extraFrosting: Bool {
+        didSet { saveOrder() }
+    }
+    var addSprinkles: Bool {
+        didSet { saveOrder() }
+    }
+    var name: String {
+        didSet { saveOrder() }
+    }
+    var streetAddress: String {
+        didSet { saveOrder() }
+    }
+    var city: String {
+        didSet { saveOrder() }
+    }
+    var zip: String {
+        didSet { saveOrder() }
+    }
 
     var hasValidAddress: Bool {
         if name.isEmptyOrWhiteSpaces || streetAddress.isEmptyOrWhiteSpaces || city.isEmptyOrWhiteSpaces || zip.isEmptyOrWhiteSpaces {
@@ -58,17 +73,37 @@ class Order: Codable {
 
         return cost
     }
-
-    enum CodingKeys: String, CodingKey {
-        case _type = "type"
-        case _quantity = "quantity"
-        case _specialRequestEnabled = "specialRequestEnabled"
-        case _extraFrosting = "extraFrosting"
-        case _addSprinkles = "addSprinkles"
-        case _name = "name"
-        case _city = "city"
-        case _streetAddress = "streetAddress"
-        case _zip = "zip"
+    
+    init() {
+        // Initialize with default values first
+        self.type = 0
+        self.quantity = 3
+        self.specialRequestEnabled = false
+        self.extraFrosting = false
+        self.addSprinkles = false
+        self.name = ""
+        self.streetAddress = ""
+        self.city = ""
+        self.zip = ""
+        
+        // Then load saved data if available
+        if let data = UserDefaults.standard.data(forKey: Self.storageKey),
+           let savedOrder = try? JSONDecoder().decode(Order.self, from: data) {
+            self.type = savedOrder.type
+            self.quantity = savedOrder.quantity
+            self.specialRequestEnabled = savedOrder.specialRequestEnabled
+            self.extraFrosting = savedOrder.extraFrosting
+            self.addSprinkles = savedOrder.addSprinkles
+            self.name = savedOrder.name
+            self.streetAddress = savedOrder.streetAddress
+            self.city = savedOrder.city
+            self.zip = savedOrder.zip
+        }
+    }
+    
+    private func saveOrder() {
+        guard let encoded = try? JSONEncoder().encode(self) else { return }
+        UserDefaults.standard.set(encoded, forKey: Self.storageKey)
     }
 }
 
