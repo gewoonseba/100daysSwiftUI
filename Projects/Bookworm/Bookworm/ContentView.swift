@@ -9,7 +9,12 @@ import SwiftData
 import SwiftUI
 
 struct ContentView: View {
-    @Query var books: [Book]
+    @Environment(\.modelContext) var modelContext
+    @Query(sort: [
+        SortDescriptor(\Book.title),
+        SortDescriptor(\Book.author)
+    ]) var books: [Book]
+    
 
     @State private var showingAddScreen = false
 
@@ -31,6 +36,7 @@ struct ContentView: View {
                         }
                     }
                 }
+                .onDelete(perform: deleteBooks)
             }
             .navigationTitle("Bookworm")
             .toolbar {
@@ -39,12 +45,40 @@ struct ContentView: View {
                         showingAddScreen.toggle()
                     }
                 }
+                
+                ToolbarItem(placement: .topBarLeading) {
+                    EditButton()
+                }
             }
             .sheet(isPresented: $showingAddScreen, content: { AddBookView() })
+            .navigationDestination(for: Book.self) { book in
+                DetailView(book: book)
+            }
+        }
+    }
+    
+    func deleteBooks(at offsets: IndexSet) {
+        for offset in offsets {
+            // find this book in our query
+            let book = books[offset]
+
+            // delete it from the context
+            modelContext.delete(book)
         }
     }
 }
 
 #Preview {
-    ContentView()
+    do {
+        // modelcontainer needs to be created to create and store a book example in memory
+        let config = ModelConfiguration(isStoredInMemoryOnly: true)
+        let container = try ModelContainer(for: Book.self, configurations: config)
+        let example1 = Book(title: "Test Book", author: "Test Author", genre: "Fantasy", review: "This was a great book; I really enjoyed it.", rating: 4)
+        let example2 = Book(title: "Another Test Book", author: "Test Writer", genre: "Horror", review: "This was a great book; I really enjoyed it.", rating: 4)
+
+        return ContentView()
+            .modelContainer(container)
+    } catch {
+        return Text("Failed to create preview: \(error.localizedDescription)")
+    }
 }
