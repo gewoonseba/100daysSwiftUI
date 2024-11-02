@@ -44,11 +44,15 @@ struct AddBookView: View {
                         modelContext.insert(newBook)
                         
                         dismiss()
-                    }
+                    }.disabled(isInvalidForm())
                 }
             }
             .navigationTitle("Add Book")
         }
+    }
+    
+    func isInvalidForm() -> Bool {
+        title.isEmpty || author.isEmpty || genre.isEmpty
     }
 }
 

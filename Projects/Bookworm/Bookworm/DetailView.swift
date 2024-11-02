@@ -34,6 +34,9 @@ struct DetailView: View {
 
             Text(book.author)
                 .font(.title)
+            
+            Text(book.finishedDate.formatted(date: .long, time: .omitted))
+                .font(.subheadline)
                 .foregroundStyle(.secondary)
 
             Text(book.review)

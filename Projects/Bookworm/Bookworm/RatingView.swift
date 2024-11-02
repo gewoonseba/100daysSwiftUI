@@ -25,7 +25,7 @@ struct RatingView: View {
                 Text(label)
             }
             
-            ForEach(0..<maximumRating+1) { number in
+            ForEach(1..<maximumRating+1) { number in
                 Button {
                     rating = number
                 } label: {
