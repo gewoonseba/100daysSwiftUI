@@ -3,13 +3,18 @@
 //  iExpense
 //
 //  Created by Sebastian Stoelen on 10/10/2024.
-
+import SwiftData
 import Foundation
 
-
-struct ExpenseItem: Identifiable, Codable {
-    var id = UUID()
-    let name: String
-    let type: String
-    let amount: Double
+@Model
+class ExpenseItem {
+    var name: String
+    var type: String
+    var amount: Double
+    
+    init(name: String, type: String, amount: Double) {
+        self.name = name
+        self.type = type
+        self.amount = amount
+    }
 }

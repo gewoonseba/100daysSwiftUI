@@ -5,81 +5,46 @@
 //  Created by Sebastian Stoelen on 09/10/2024.
 //
 
+import SwiftData
 import SwiftUI
 
-@Observable
-class Expenses {
-    var items = [ExpenseItem]() {
-        didSet {
-            if let encoded = try? JSONEncoder().encode(items) {
-                UserDefaults.standard.set(encoded, forKey: "items")
-            }
-        }
-    }
-
-    init() {
-        if let encoded = UserDefaults.standard.data(forKey: "items") {
-            if let decoded = try? JSONDecoder().decode([ExpenseItem].self, from: encoded) {
-                items = decoded
-                return
-            }
-        }
-        items = []
-    }
-}
-
-struct ExpenseView: View {
-    var item: ExpenseItem
-
-    var body: some View {
-        HStack {
-            VStack(alignment: .leading) {
-                Text(item.name)
-                    .font(.headline)
-                Text(item.type)
-            }
-
-            Spacer()
-            Text(item.amount, format: .currency(code: Locale.current.currency?.identifier ?? "USD"))
-                .foregroundStyle(getColor(item.amount))
-        }
-    }
-
-    func getColor(_ amount: Double) -> Color {
-        if amount > 100 {
-            .red
-        } else if amount > 10 {
-            .orange
-        } else {
-            .blue
-        }
-    }
-}
-
 struct ContentView: View {
-    @State private var expenses = Expenses()
+    @Query var expenseItems: [ExpenseItem]
+    @Environment(\.modelContext) var modelContext
 
     var body: some View {
         NavigationStack {
-            let businessExpenses = expenses.items.filter { $0.type == "Business" }
-            let personalExpenses = expenses.items.filter { $0.type == "Personal" }
+            let businessExpenses = expenseItems.filter { $0.type == "Business" }
+            let personalExpenses = expenseItems.filter { $0.type == "Personal" }
             List {
                 Section("Business") {
+                    if businessExpenses.isEmpty {
+                        Text("No business expenses yet")
+                            .foregroundStyle(.secondary)
+                    }
                     ForEach(businessExpenses) {
                         ExpenseView(item: $0)
-                    }.onDelete(perform: removeItems)
+                    }.onDelete(perform: { offsets in
+                        removeItems(at: offsets, from: "Business")
+                    })
                 }
 
                 Section("Personal") {
+                    if personalExpenses.isEmpty {
+                        Text("No personal expenses yet")
+                            .foregroundStyle(.secondary)
+                    }
                     ForEach(personalExpenses) {
                         ExpenseView(item: $0)
-                    }.onDelete(perform: removeItems)
+                    }.onDelete(perform: { offsets in
+                        removeItems(at: offsets, from: "Personal")
+                    })
                 }
             }
             .navigationTitle("iExpense")
             .toolbar {
                 NavigationLink {
-                    AddView(expenses: expenses)
+                    AddView()
                 } label: {
                     Image(systemName: "plus")
                 }
@@ -87,11 +52,22 @@ struct ContentView: View {
         }
     }
 
-    func removeItems(at offsets: IndexSet) {
-        expenses.items.remove(atOffsets: offsets)
+    func removeItems(at offsets: IndexSet, from type: String) {
+        let corretExpenseTypes = expenseItems.filter { $0.type == type }
+        for offset in offsets {
+            let itemToDelete = corretExpenseTypes[offset]
+            modelContext.delete(itemToDelete)
+        }
     }
 }
 
 #Preview {
-    ContentView()
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(for: ExpenseItem.self, configurations: config)
+    
+    let exampleItem = ExpenseItem(name: "Example Item", type: "Personal", amount: 100)
+    container.mainContext.insert(exampleItem)
+    
+    return ContentView()
+        .modelContainer(container)
 }
