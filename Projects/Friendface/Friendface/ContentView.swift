@@ -11,18 +11,23 @@ struct ContentView: View {
     @State private var users: [User] = []
 
     var body: some View {
-        VStack {
-            Text("Users: \(users.count)")
-            Button("Fetch users") {
-                Task {
-                    await fetchUsers()
+        NavigationStack {
+            List {
+                ForEach(users) { user in
+                    UserListView(user: user)
                 }
             }
+            .navigationTitle("Friendface")
+            .task {
+                await fetchUsers()
+            }
         }
-        .padding()
     }
 
     func fetchUsers() async {
+        guard users.isEmpty else { return }
+        
+        print("Fetching users...")
         let url = URL(string: "https://www.hackingwithswift.com/samples/friendface.json")!
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
