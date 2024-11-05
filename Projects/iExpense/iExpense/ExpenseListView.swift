@@ -10,7 +10,7 @@ import SwiftUI
 struct ExpenseListView: View {
     @Query var expenseItems: [ExpenseItem]
     @Environment(\.modelContext) var modelContext
-    @State var typeFilter: String = ""
+    let typeFilter: String
     
     init(sortOrder: [SortDescriptor<ExpenseItem>], typeFilter: String) {
         self.typeFilter = typeFilter
