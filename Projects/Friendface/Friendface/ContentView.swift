@@ -14,10 +14,15 @@ struct ContentView: View {
         NavigationStack {
             List {
                 ForEach(users) { user in
-                    UserListView(user: user)
+                    NavigationLink(value: user) {
+                        UserRowView(user: user)
+                    }
                 }
             }
             .navigationTitle("Friendface")
+            .navigationDestination(for: User.self, destination: { user in
+                UserDetailView(user: user)
+            })
             .task {
                 await fetchUsers()
             }

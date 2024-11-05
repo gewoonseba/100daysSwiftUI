@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct UserListView: View {
+struct UserRowView: View {
     let user: User
 
     var body: some View {
@@ -27,7 +27,7 @@ struct UserListView: View {
 }
 
 #Preview {
-    UserListView(user: User(
+    UserRowView(user: User(
         id: "1",
         isActive: false,
         name: "Sebastian Stoelen",
