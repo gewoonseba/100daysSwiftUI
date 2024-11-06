@@ -6,9 +6,11 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct ContentView: View {
-    @State private var users: [User] = []
+    @Query var users: [User]
+    @Environment(\.modelContext) var modelContext
 
     var body: some View {
         NavigationStack {
@@ -43,7 +45,12 @@ struct ContentView: View {
             let decoder = JSONDecoder()
             decoder.dateDecodingStrategy = .iso8601
 
-            users = try decoder.decode([User].self, from: data)
+            let decodedUsers = try decoder.decode([User].self, from: data)
+            
+            for user in decodedUsers {
+                modelContext.insert(user)
+            }
+            
         } catch {
             print("Fetching users failed: \(error.localizedDescription)")
         }
