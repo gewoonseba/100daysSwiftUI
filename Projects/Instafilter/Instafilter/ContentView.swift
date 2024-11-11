@@ -8,6 +8,7 @@
 import CoreImage
 import CoreImage.CIFilterBuiltins
 import PhotosUI
+import StoreKit
 import SwiftUI
 
 struct ContentView: View {
@@ -15,7 +16,12 @@ struct ContentView: View {
     @State private var processedImage: Image?
     @State private var filterIntensity: Double = 0.5
     
-    @State private var currentFilter = CIFilter.sepiaTone()
+    @State private var showingFilters = false
+    @State private var currentFilter: CIFilter = .sepiaTone()
+    
+    @AppStorage("filterCount") var filterCount = 0
+    @Environment(\.requestReview) var requestReview
+    
     let context = CIContext()
     
     var body: some View {
@@ -40,7 +46,7 @@ struct ContentView: View {
                 VStack(alignment: .leading) {
                     Text("Intensity")
                     Slider(value: $filterIntensity)
-                        .onChange(of: filterIntensity, applyProcessing)
+                        .onChange(of: filterIntensity, applyFilterIntensity)
                 }.padding(.vertical)
                 
                 HStack {
@@ -53,19 +59,41 @@ struct ContentView: View {
                     .foregroundStyle(.primary)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
         
-                    Button(action: shareImage) {
-                        Text("Share")
-                            .frame(maxWidth: .infinity)
-                            .padding(6)
+                    if let processedImage {
+                        ShareLink(item: processedImage, preview: SharePreview("Instafilter image", image: processedImage)) {
+                            Text("Share")
+                                .frame(maxWidth: .infinity)
+                                .padding(6)
+                        }
+                        .buttonStyle(.bordered)
+                        .foregroundStyle(.primary)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                    } else {
+                        Button {
+                            // Empty action since button is disabled
+                        } label: {
+                            Text("Share")
+                                .frame(maxWidth: .infinity)
+                                .padding(6)
+                        }
+                        .buttonStyle(.bordered)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .disabled(true)
                     }
-                    .buttonStyle(.bordered)
-                    .foregroundStyle(.primary)
                 }
-                
-                Spacer()
             }
             .padding([.horizontal, .bottom])
             .navigationTitle("Instafilter")
+            .confirmationDialog("Select a filter", isPresented: $showingFilters) {
+                Button("Crystallize") { setFilter(CIFilter.crystallize()) }
+                Button("Edges") { setFilter(CIFilter.edges()) }
+                Button("Gaussian Blur") { setFilter(CIFilter.gaussianBlur()) }
+                Button("Pixellate") { setFilter(CIFilter.pixellate()) }
+                Button("Sepia Tone") { setFilter(CIFilter.sepiaTone()) }
+                Button("Unsharp Mask") { setFilter(CIFilter.unsharpMask()) }
+                Button("Vignette") { setFilter(CIFilter.vignette()) }
+                Button("Cancel", role: .cancel) {}
+            }
         }
     }
     
@@ -76,12 +104,16 @@ struct ContentView: View {
             
             let beginImage = CIImage(image: inputImage)
             currentFilter.setValue(beginImage, forKey: kCIInputImageKey)
-            applyProcessing()
+            applyFilterIntensity()
         }
     }
     
-    func applyProcessing() {
-        currentFilter.intensity = Float(filterIntensity)
+    func applyFilterIntensity() {
+        let inputKeys = currentFilter.inputKeys
+
+        if inputKeys.contains(kCIInputIntensityKey) { currentFilter.setValue(filterIntensity, forKey: kCIInputIntensityKey) }
+        if inputKeys.contains(kCIInputRadiusKey) { currentFilter.setValue(filterIntensity * 200, forKey: kCIInputRadiusKey) }
+        if inputKeys.contains(kCIInputScaleKey) { currentFilter.setValue(filterIntensity * 100, forKey: kCIInputScaleKey) }
 
         guard let outputImage = currentFilter.outputImage else { return }
         guard let cgImage = context.createCGImage(outputImage, from: outputImage.extent) else { return }
@@ -90,12 +122,25 @@ struct ContentView: View {
         processedImage = Image(uiImage: uiImage)
     }
     
-    func changeFilter() {}
+    func changeFilter() {
+        showingFilters = true
+    }
+    
+    func setFilter(_ filter: CIFilter) {
+        filterCount += 1
+
+        if filterCount >= 20 {
+            requestReview()
+        }
+        
+        currentFilter = filter
+        loadImage()
+    }
     
     func shareImage() {}
 }
 
-//Fix image being rotated after applying effects
+// Fix image being rotated after applying effects
 extension UIImage {
     func fixedOrientation() -> UIImage {
         if imageOrientation == .up {
