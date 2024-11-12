@@ -15,6 +15,7 @@ struct ContentView: View {
     @State private var selectedItem: PhotosPickerItem?
     @State private var processedImage: Image?
     @State private var filterIntensity: Double = 0.5
+    @State private var filterRadius: Double = 0.5
     
     @State private var showingFilters = false
     @State private var currentFilter: CIFilter = .sepiaTone()
@@ -45,8 +46,18 @@ struct ContentView: View {
                 
                 VStack(alignment: .leading) {
                     Text("Intensity")
+                        .foregroundStyle(processedImage == nil ? .secondary : .primary)
                     Slider(value: $filterIntensity)
-                        .onChange(of: filterIntensity, applyFilterIntensity)
+                        .onChange(of: filterIntensity, applyFilterParameters)
+                        .disabled(processedImage == nil)
+                }
+                
+                VStack(alignment: .leading) {
+                    Text("Radius")
+                        .foregroundStyle(processedImage == nil ? .secondary : .primary)
+                    Slider(value: $filterRadius)
+                        .onChange(of: filterRadius, applyFilterParameters)
+                        .disabled(processedImage == nil)
                 }.padding(.vertical)
                 
                 HStack {
@@ -56,8 +67,8 @@ struct ContentView: View {
                             .padding(6)
                     }
                     .buttonStyle(.bordered)
-                    .foregroundStyle(.primary)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .disabled(processedImage == nil)
         
                     if let processedImage {
                         ShareLink(item: processedImage, preview: SharePreview("Instafilter image", image: processedImage)) {
@@ -92,6 +103,10 @@ struct ContentView: View {
                 Button("Sepia Tone") { setFilter(CIFilter.sepiaTone()) }
                 Button("Unsharp Mask") { setFilter(CIFilter.unsharpMask()) }
                 Button("Vignette") { setFilter(CIFilter.vignette()) }
+                Button("Monochrome Halftone") { setFilter(CIFilter.dotScreen()) }
+                Button("Color Halftone") { setFilter(CIFilter.cmykHalftone()) }
+                Button("Comic") { setFilter(CIFilter.comicEffect()) }
+                
                 Button("Cancel", role: .cancel) {}
             }
         }
@@ -104,16 +119,17 @@ struct ContentView: View {
             
             let beginImage = CIImage(image: inputImage)
             currentFilter.setValue(beginImage, forKey: kCIInputImageKey)
-            applyFilterIntensity()
+            applyFilterParameters()
         }
     }
     
-    func applyFilterIntensity() {
+    func applyFilterParameters() {
         let inputKeys = currentFilter.inputKeys
 
         if inputKeys.contains(kCIInputIntensityKey) { currentFilter.setValue(filterIntensity, forKey: kCIInputIntensityKey) }
-        if inputKeys.contains(kCIInputRadiusKey) { currentFilter.setValue(filterIntensity * 200, forKey: kCIInputRadiusKey) }
-        if inputKeys.contains(kCIInputScaleKey) { currentFilter.setValue(filterIntensity * 100, forKey: kCIInputScaleKey) }
+        if inputKeys.contains(kCIInputRadiusKey) { currentFilter.setValue(filterRadius * 200, forKey: kCIInputRadiusKey) }
+        if inputKeys.contains(kCIInputScaleKey) { currentFilter.setValue(filterRadius * 100, forKey: kCIInputScaleKey) }
+        if inputKeys.contains(kCIInputWidthKey) { currentFilter.setValue(filterRadius * 100, forKey: kCIInputWidthKey) }
 
         guard let outputImage = currentFilter.outputImage else { return }
         guard let cgImage = context.createCGImage(outputImage, from: outputImage.extent) else { return }
