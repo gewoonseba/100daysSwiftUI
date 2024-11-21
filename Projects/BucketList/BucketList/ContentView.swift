@@ -39,8 +39,7 @@ struct ContentView: View {
     )
 
     var body: some View {
-//        if viewModel.isUnlocked {
-        if true {
+        if viewModel.isUnlocked {
             ZStack {
                 MapReader { proxy in
                     Map(initialPosition: startPosition) {
@@ -91,6 +90,11 @@ struct ContentView: View {
                 .background(.blue)
                 .foregroundStyle(.white)
                 .clipShape(.capsule)
+                .alert("Error authenticating", isPresented: $viewModel.errorUnlocking) {
+                    Button("OK") {}
+                } message: {
+                    Text(viewModel.errorMessage)
+                }
         }
     }
 }

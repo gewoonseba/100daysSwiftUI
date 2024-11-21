@@ -16,6 +16,8 @@ extension ContentView {
     @Observable
     class ViewModel {
         var isUnlocked = false
+        var errorUnlocking = false
+        var errorMessage = ""
         
         private(set) var locations: [Location]
         var selectedPlace: Location?
@@ -41,9 +43,11 @@ extension ContentView {
                 context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { success, authenticationError in
 
                     if success {
+                        self.errorUnlocking = false
                         self.isUnlocked = true
                     } else {
-                        // error
+                        self.errorUnlocking = true
+                        self.errorMessage = authenticationError?.localizedDescription ?? "Unknown error."
                     }
                 }
             } else {
