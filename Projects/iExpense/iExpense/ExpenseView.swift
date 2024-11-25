@@ -22,6 +22,9 @@ struct ExpenseView: View {
             Text(item.amount, format: .currency(code: Locale.current.currency?.identifier ?? "USD"))
                 .foregroundStyle(getColor(item.amount))
         }
+        .accessibilityElement()
+        .accessibilityLabel(Text("\(item.name), \(item.amount)"))
+        .accessibilityHint(Text("\(item.type)"))
     }
 
     func getColor(_ amount: Double) -> Color {

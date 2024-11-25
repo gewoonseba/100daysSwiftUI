@@ -19,13 +19,14 @@ struct CheckoutView: View {
         ScrollView {
             VStack {
                 AsyncImage(url: URL(string: "https://hws.dev/img/cupcakes@3x.jpg"), scale: 3) { image in
-                        image
-                            .resizable()
-                            .scaledToFit()
+                    image
+                        .resizable()
+                        .scaledToFit()
                 } placeholder: {
                     ProgressView()
                 }
                 .frame(height: 233)
+                .accessibilityHidden(true)
 
                 Text("Your total is \(order.cost, format: .currency(code: "USD"))")
                     .font(.title)
@@ -35,19 +36,19 @@ struct CheckoutView: View {
                         await placeOrder()
                     }
                 }
-                    .padding()
+                .padding()
             }
         }
         .navigationTitle("Check out")
         .navigationBarTitleDisplayMode(.inline)
         .alert("Thank you!", isPresented: $showingConfirmation) {
-            Button("OK") { }
+            Button("OK") {}
         } message: {
             Text(confirmationMessage)
         }
         .alert("Something went wrong", isPresented: $showingError) {
             Button("OK") {
-                //ideally navigate back to home here
+                // ideally navigate back to home here
             }
         } message: {
             Text("Please try agian later.")
@@ -76,7 +77,6 @@ struct CheckoutView: View {
         } catch {
             print("Checkout failed: \(error.localizedDescription)")
             showingError = true
-            
         }
     }
 }
