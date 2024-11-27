@@ -14,7 +14,9 @@ struct ContentView: View {
     @Query(sort: \Friend.name) var friends: [Friend]
 
     @State private var pickerItem: PhotosPickerItem?
-    @State private var newImage: Image?
+    @State private var selectedImageData: Data?
+    @State private var showingNewFriendSheet = false
+    @State private var newFriendName = ""
 
     var body: some View {
         NavigationStack {
@@ -28,17 +30,16 @@ struct ContentView: View {
                                     .scaledToFill()
                                     .frame(width: 48, height: 48)
                                     .clipShape(Circle())
+                                    .accessibilityHidden(true)
                             }
                             Text(friend.name)
                         }
+                    }.onDelete { indexSet in
+                        for index in indexSet {
+                            modelContext.delete(friends[index])
+                        }
                     }
                 }
-                Spacer()
-
-                newImage?
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 300, height: 300)
             }
             .navigationTitle("FriendList")
             .toolbar {
@@ -50,22 +51,19 @@ struct ContentView: View {
             }
             .onChange(of: pickerItem) {
                 Task {
-                    await addNewFriend(newPicture: pickerItem)
+                    if let data = try? await pickerItem?.loadTransferable(type: Data.self) {
+                        selectedImageData = data
+                        showingNewFriendSheet = true
+                    }
                 }
+            }
+            .sheet(isPresented: $showingNewFriendSheet) {
+                NewFriendView(
+                    selectedImageData: $selectedImageData
+                )
             }
         }
     }
-
-    func addNewFriend(newPicture: PhotosPickerItem?) async {
-        guard let imageData = try? await newPicture?.loadTransferable(type: Data.self) else {
-            print("Failed to load image data")
-            return
-        }
-        
-        let friend = Friend(name: "New Friend", photo: imageData)
-        modelContext.insert(friend)
-    }
-
 }
 
 #Preview {
@@ -73,22 +71,23 @@ struct ContentView: View {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         let container = try ModelContainer(for: Friend.self, configurations: config)
         let context = container.mainContext
-        
+
         // Convert placeholder image to Data
         guard let placeholderImage = UIImage(systemName: "person.circle.fill"),
-              let imageData = placeholderImage.jpegData(compressionQuality: 0.8) else {
+              let imageData = placeholderImage.jpegData(compressionQuality: 0.8)
+        else {
             return ContentView()
         }
-        
+
         // Create and insert example friends
-        let friend1 = Friend(name: "Maria", photo: imageData)
-        let friend2 = Friend(name: "Parker", photo: imageData)
-        let friend3 = Friend(name: "Danny", photo: imageData)
-        
+        let friend1 = Friend(name: "Maria", photo: imageData, coordinate: nil)
+        let friend2 = Friend(name: "Parker", photo: imageData, coordinate: nil)
+        let friend3 = Friend(name: "Danny", photo: imageData, coordinate: nil)
+
         context.insert(friend1)
         context.insert(friend2)
         context.insert(friend3)
-        
+
         return ContentView()
             .modelContainer(container)
     } catch {
