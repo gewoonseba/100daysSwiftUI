@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		A881B88D2CFE21B100F1988B /* SamplePackage in Frameworks */ = {isa = PBXBuildFile; productRef = A881B88C2CFE21B100F1988B /* SamplePackage */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		A8F8810E2CF89C7400E3C7F6 /* HotProspects.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HotProspects.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +27,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A881B88D2CFE21B100F1988B /* SamplePackage in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +70,7 @@
 			);
 			name = HotProspects;
 			packageProductDependencies = (
+				A881B88C2CFE21B100F1988B /* SamplePackage */,
 			);
 			productName = HotProspects;
 			productReference = A8F8810E2CF89C7400E3C7F6 /* HotProspects.app */;
@@ -94,6 +100,9 @@
 			);
 			mainGroup = A8F881052CF89C7400E3C7F6;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				A881B88B2CFE21B100F1988B /* XCRemoteSwiftPackageReference "SamplePackage" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = A8F8810F2CF89C7400E3C7F6 /* Products */;
 			projectDirPath = "";
@@ -324,6 +333,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A881B88B2CFE21B100F1988B /* XCRemoteSwiftPackageReference "SamplePackage" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/twostraws/SamplePackage";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A881B88C2CFE21B100F1988B /* SamplePackage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A881B88B2CFE21B100F1988B /* XCRemoteSwiftPackageReference "SamplePackage" */;
+			productName = SamplePackage;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = A8F881062CF89C7400E3C7F6 /* Project object */;
 }
