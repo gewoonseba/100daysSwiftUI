@@ -183,5 +183,4 @@ struct ProspectSwipeActionsView: View {
 
 #Preview {
     ProspectsView(filter: .none)
-        .modelContainer(for: Prospect.self)
 }
