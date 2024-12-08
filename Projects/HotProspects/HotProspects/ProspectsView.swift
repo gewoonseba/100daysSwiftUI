@@ -49,12 +49,20 @@ struct ProspectsView: View {
     var body: some View {
         NavigationStack {
             List(prospects, selection: $selectedProspects) { prospect in
-                VStack(alignment: .leading) {
-                    Text(prospect.name)
-                        .font(.headline)
-                    Text(prospect.emailAddress)
-                        .foregroundStyle(.secondary)
+                HStack {
+                    VStack(alignment: .leading) {
+                        Text(prospect.name)
+                            .font(.headline)
+                        Text(prospect.emailAddress)
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    if filter == .none {
+                        Image(systemName: prospect.isContacted ? "checkmark.circle.fill" : "circle")
+                            .foregroundColor(prospect.isContacted ? .green : .gray.opacity(0.4))
+                    }
                 }
+
                 .swipeActions {
                     if prospect.isContacted {
                         Button("Delete", systemImage: "trash", role: .destructive) {
@@ -74,7 +82,7 @@ struct ProspectsView: View {
                             prospect.isContacted.toggle()
                         }
                         .tint(.green)
-                        
+
                         Button("Remind Me", systemImage: "bell") {
                             addNotification(for: prospect)
                         }
@@ -128,7 +136,7 @@ struct ProspectsView: View {
             modelContext.delete(prospect)
         }
     }
-    
+
     func addNotification(for prospect: Prospect) {
         let center = UNUserNotificationCenter.current()
 
@@ -141,9 +149,8 @@ struct ProspectsView: View {
             var dateComponents = DateComponents()
             dateComponents.hour = 9
 //            let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false)
-            
-            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 5, repeats: false)
 
+            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 5, repeats: false)
 
             let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
             center.add(request)
