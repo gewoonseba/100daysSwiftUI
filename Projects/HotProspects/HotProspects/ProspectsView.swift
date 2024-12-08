@@ -19,6 +19,8 @@ struct ProspectsView: View {
     @Environment(\.modelContext) var modelContext
     @State private var isShowingScanner = false
     @State private var selectedProspects = Set<Prospect>()
+    @State private var navigationPath = NavigationPath()
+
     let filter: FilterType
     var title: String {
         switch filter {
@@ -42,37 +44,41 @@ struct ProspectsView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            List(prospects, selection: $selectedProspects) { prospect in
-                NavigationLink(destination: EditProspectView(prospect: prospect)) {
+            NavigationStack(path: $navigationPath) {
+                List(prospects, selection: $selectedProspects) { prospect in
                     ProspectItemView(prospect: prospect, showContactStatus: filter == .none)
+                        .onTapGesture {
+                            navigationPath.append(prospect)
+                        }
+                        .swipeActions {
+                            ProspectSwipeActionsView(prospect: prospect, modelContext: modelContext, addNotification: addNotification)
+                        }
+                        .tag(prospect)
                 }
-                .swipeActions {
-                    ProspectSwipeActionsView(prospect: prospect, modelContext: modelContext, addNotification: addNotification)
+                .navigationTitle(title)
+                .navigationDestination(for: Prospect.self) { prospect in
+                    EditProspectView(prospect: prospect)
                 }
-                .tag(prospect)
-            }
-            .navigationTitle(title)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    EditButton()
-                }
-                if selectedProspects.isEmpty == false {
-                    ToolbarItem(placement: .bottomBar) {
-                        Button("Delete Selected", action: delete)
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        EditButton()
+                    }
+                    if selectedProspects.isEmpty == false {
+                        ToolbarItem(placement: .bottomBar) {
+                            Button("Delete Selected", action: delete)
+                        }
+                    }
+                    ToolbarItem {
+                        Button("Scan", systemImage: "qrcode.viewfinder") {
+                            isShowingScanner = true
+                        }
                     }
                 }
-                ToolbarItem {
-                    Button("Scan", systemImage: "qrcode.viewfinder") {
-                        isShowingScanner = true
-                    }
+                .sheet(isPresented: $isShowingScanner) {
+                    CodeScannerView(codeTypes: [.qr], simulatedData: "Seba Stoelen\nseba@gewoonseba.com", completion: handleScan)
                 }
-            }
-            .sheet(isPresented: $isShowingScanner) {
-                CodeScannerView(codeTypes: [.qr], simulatedData: "Seba Stoelen\nseba@gewoonseba.com", completion: handleScan)
             }
         }
-    }
 
     func handleScan(result: Result<ScanResult, ScanError>) {
         isShowingScanner = false
