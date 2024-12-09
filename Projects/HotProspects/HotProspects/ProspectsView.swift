@@ -73,6 +73,11 @@ struct ProspectsView: View {
                             isShowingScanner = true
                         }
                     }
+                    ToolbarItem {
+                        Button("Sort", systemImage: "arrow.up.arrow.down") {
+                            toggleSort()
+                        }
+                    }
                 }
                 .sheet(isPresented: $isShowingScanner) {
                     CodeScannerView(codeTypes: [.qr], simulatedData: "Seba Stoelen\nseba@gewoonseba.com", completion: handleScan)
@@ -97,6 +102,10 @@ struct ProspectsView: View {
         for prospect in selectedProspects {
             modelContext.delete(prospect)
         }
+    }
+    
+    func toggleSort() {
+        
     }
 
     func addNotification(for prospect: Prospect) {
