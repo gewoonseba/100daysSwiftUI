@@ -14,7 +14,8 @@ struct CardView: View {
 
 
     let card: Card
-    var removal: (() -> Void)? = nil
+    var handleCorrect: (() -> Void)? = nil
+    var handleIncorrect: (() -> Void)? = nil
     
     @State private var isShowingAnswer = false
     @State private var offset = CGSize.zero {
@@ -65,9 +66,14 @@ struct CardView: View {
                     offset = value.translation
                 }
                 .onEnded { _ in
-                    if abs(offset.width) > 160 {
-                        removal?()
-                    } else {
+                    if offset.width > 160 {
+                        //Moving to the right == correct
+                        handleCorrect?()
+                    } else if offset.width < -160 {
+                        //Moving to the left == incorrect
+                        handleIncorrect?()
+                    }
+                    else {
                         withAnimation(.spring(duration: 0.15, bounce: 0.5)) {
                             offset = .zero
                         }
@@ -81,5 +87,13 @@ struct CardView: View {
 }
 
 #Preview {
-    CardView(card: Card.example)
+    func correct() {
+        print("correct")
+    }
+    func incorrect() {
+        print("incorrect")
+    }
+    return CardView(card: Card.example,
+             handleCorrect: correct,
+             handleIncorrect: incorrect)
 }

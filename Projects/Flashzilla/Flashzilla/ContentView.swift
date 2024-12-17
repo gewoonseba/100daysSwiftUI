@@ -36,11 +36,12 @@ struct ContentView: View {
                 ZStack {
                     ForEach(0 ..< cards.count, id: \.self) { index in
 
-                        CardView(card: cards[index]) {
-                            withAnimation {
-                                removeCard(at: index)
-                            }
-                        }
+                        CardView(
+                            card: cards[index],
+                            handleCorrect: reAddCard(at: index),
+                            handleIncorrect: removeCard(at: index)
+                        )
+                        Text("cards[index].prompt")
                         .stacked(at: index, in: cards.count)
                         .allowsHitTesting(index == cards.count - 1)
                         .accessibilityHidden(index < cards.count - 1)
@@ -141,6 +142,11 @@ struct ContentView: View {
         if cards.isEmpty {
             isActive = false
         }
+    }
+    
+    func reAddCard(at index: Int) {
+        guard index >= 0 else { return }
+        cards.insert(cards[index], at: 0)
     }
 
     func resetCards() {
