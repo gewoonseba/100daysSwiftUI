@@ -11,12 +11,10 @@ struct CardView: View {
     @Environment(\.accessibilityDifferentiateWithoutColor) var accessibilityDifferentiateWithoutColor
     @Environment(\.accessibilityVoiceOverEnabled) var accessibilityVoiceOverEnabled
 
-
-
     let card: Card
     var handleCorrect: (() -> Void)? = nil
     var handleIncorrect: (() -> Void)? = nil
-    
+
     @State private var isShowingAnswer = false
     @State private var offset = CGSize.zero {
         didSet {
@@ -30,7 +28,7 @@ struct CardView: View {
                 .fill(accessibilityDifferentiateWithoutColor ? .white : .white.opacity(1 - Double(abs(offset.width / 160))))
                 .background(
                     accessibilityDifferentiateWithoutColor ? nil :
-                    RoundedRectangle(cornerRadius: 25)
+                        RoundedRectangle(cornerRadius: 25)
                         .fill(offset.width > 0 ? Color.green : Color.red)
                 )
                 .shadow(radius: 4)
@@ -67,13 +65,15 @@ struct CardView: View {
                 }
                 .onEnded { _ in
                     if offset.width > 160 {
-                        //Moving to the right == correct
+                        // Moving to the right == correct
                         handleCorrect?()
                     } else if offset.width < -160 {
-                        //Moving to the left == incorrect
+                        // Moving to the left == incorrect
                         handleIncorrect?()
-                    }
-                    else {
+                        withAnimation(.spring(duration: 0.15, bounce: 0.5)) {
+                            offset = .zero
+                        }
+                    } else {
                         withAnimation(.spring(duration: 0.15, bounce: 0.5)) {
                             offset = .zero
                         }
@@ -94,6 +94,6 @@ struct CardView: View {
         print("incorrect")
     }
     return CardView(card: Card.example,
-             handleCorrect: correct,
-             handleIncorrect: incorrect)
+                    handleCorrect: correct,
+                    handleIncorrect: incorrect)
 }

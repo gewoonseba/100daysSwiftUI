@@ -38,10 +38,9 @@ struct ContentView: View {
 
                         CardView(
                             card: cards[index],
-                            handleCorrect: reAddCard(at: index),
-                            handleIncorrect: removeCard(at: index)
+                            handleCorrect: { withAnimation {removeCard(at: index) }},
+                            handleIncorrect: { withAnimation {reAddCard(at: index) }}
                         )
-                        Text("cards[index].prompt")
                         .stacked(at: index, in: cards.count)
                         .allowsHitTesting(index == cards.count - 1)
                         .accessibilityHidden(index < cards.count - 1)
@@ -56,7 +55,7 @@ struct ContentView: View {
                         .clipShape(.capsule)
                 }
             }
-            
+
             VStack {
                 HStack {
                     Spacer()
@@ -143,10 +142,10 @@ struct ContentView: View {
             isActive = false
         }
     }
-    
+
     func reAddCard(at index: Int) {
         guard index >= 0 else { return }
-        cards.insert(cards[index], at: 0)
+        cards.move(fromOffsets: IndexSet(integer: index), toOffset: 0)
     }
 
     func resetCards() {
@@ -155,7 +154,7 @@ struct ContentView: View {
         isActive = true
         loadData()
     }
-    
+
     func loadData() {
         if let data = UserDefaults.standard.data(forKey: "Cards") {
             if let decoded = try? JSONDecoder().decode([Card].self, from: data) {
