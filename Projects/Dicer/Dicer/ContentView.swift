@@ -11,16 +11,35 @@ import SwiftUI
 struct HistoryView: View {
     @Query(sort: \DiceRoll.rollTimestamp, order: .reverse) private var diceRolls: [DiceRoll]
     @Environment(\.dismiss) var dismiss
+    @Environment(\.modelContext) private var modelContext
 
     var body: some View {
         NavigationStack {
-            List(diceRolls) { roll in
-                HStack {
-                    Text("Roll: \(roll.result ?? 0)")
-                        .font(.title3)
-                    Spacer()
-                    Text(roll.rollTimestamp.formatted(date: .abbreviated, time: .shortened))
-                        .foregroundColor(.secondary)
+            VStack {
+                List(diceRolls) { roll in
+                    HStack {
+                        Text("Roll: \(roll.result ?? 0)")
+                            .font(.title3)
+                        Spacer()
+                        Text(roll.rollTimestamp.formatted(date: .abbreviated, time: .shortened))
+                            .foregroundColor(.secondary)
+                    }
+                }
+
+                if !diceRolls.isEmpty {
+                    Button(role: .destructive) {
+                        for roll in diceRolls {
+                            modelContext.delete(roll)
+                        }
+                        try? modelContext.save()
+                    } label: {
+                        Text("Delete Roll History")
+                            .font(.title)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .padding()
                 }
             }
             .navigationTitle("Roll History")
@@ -41,6 +60,9 @@ struct ContentView: View {
     @State private var showingHistory = false
     @State private var animationResults: [Int] = []
     @State private var isRolling = false
+
+    // Create a single instance of the feedback generator
+    let feedbackGenerator = UIImpactFeedbackGenerator(style: .soft)
 
     var body: some View {
         NavigationStack {
@@ -79,6 +101,10 @@ struct ContentView: View {
                 HistoryView()
             }
         }
+        .onAppear {
+            // Prepare the generator when the view appears
+            feedbackGenerator.prepare()
+        }
     }
 
     func generateRandomSequence(sides: Int, count: Int) -> [Int] {
@@ -88,6 +114,9 @@ struct ContentView: View {
     func rollDice() {
         guard !isRolling else { return }
         isRolling = true
+
+        // Prepare the generator before the animation sequence
+        feedbackGenerator.prepare()
 
         // Generate random sequence
         let randomSequence = generateRandomSequence(sides: 6, count: 25)
@@ -104,7 +133,7 @@ struct ContentView: View {
 
         func getInterval(_ i: Int) -> TimeInterval {
             // Start very fast and exponentially slow down
-            return 0.03 * pow(1.1, Double(i))
+            return 0.01 * pow(1.15, Double(i))
         }
 
         func scheduleNext() {
@@ -119,6 +148,8 @@ struct ContentView: View {
             Timer.scheduledTimer(withTimeInterval: getInterval(index), repeats: false) { _ in
                 withAnimation {
                     displayedResult = animationResults[index]
+                    // Trigger haptic feedback for each number change
+                    feedbackGenerator.impactOccurred(intensity: index == animationResults.count - 1 ? 1.0 : 0.6)
                 }
 
                 index += 1
