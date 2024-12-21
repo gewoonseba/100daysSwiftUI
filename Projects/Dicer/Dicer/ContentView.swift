@@ -37,8 +37,10 @@ struct HistoryView: View {
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \DiceRoll.rollTimestamp, order: .reverse) private var diceRolls: [DiceRoll]
-    @State private var latestRoll: Int = 0
+    @State private var displayedResult: Int = 0
     @State private var showingHistory = false
+    @State private var animationResults: [Int] = []
+    @State private var isRolling = false
 
     var body: some View {
         NavigationStack {
@@ -46,9 +48,10 @@ struct ContentView: View {
                 VStack {
                     Spacer()
 
-                    Text("\(latestRoll)")
+                    Text("\(displayedResult)")
+                        .contentTransition(.numericText())
                         .font(.system(size: 100, weight: .bold))
-                        .foregroundColor(.blue)
+                        .foregroundColor(isRolling ? .gray : .blue)
 
                     Spacer()
 
@@ -58,9 +61,10 @@ struct ContentView: View {
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color.blue)
+                            .background(isRolling ? Color.gray : Color.blue)
                             .cornerRadius(10)
                     }
+                    .disabled(isRolling)
                     .padding()
                 }
             }
@@ -77,13 +81,52 @@ struct ContentView: View {
         }
     }
 
+    func generateRandomSequence(sides: Int, count: Int) -> [Int] {
+        (1 ... count).map { _ in Int.random(in: 1 ... sides) }
+    }
+
     func rollDice() {
+        guard !isRolling else { return }
+        isRolling = true
+
+        // Generate random sequence
+        let randomSequence = generateRandomSequence(sides: 6, count: 25)
+
+        // Create and roll the actual dice
         let newRoll = DiceRoll(sides: 6)
         newRoll.roll()
-        modelContext.insert(newRoll)
-        try? modelContext.save()
 
-        latestRoll = newRoll.result!
+        // Combine random sequence with actual result
+        animationResults = randomSequence + [newRoll.result!]
+
+        // Start the animation sequence
+        var index = 0
+
+        func getInterval(_ i: Int) -> TimeInterval {
+            // Start very fast and exponentially slow down
+            return 0.03 * pow(1.1, Double(i))
+        }
+
+        func scheduleNext() {
+            guard index < animationResults.count else {
+                // Animation sequence complete
+                modelContext.insert(newRoll)
+                try? modelContext.save()
+                isRolling = false
+                return
+            }
+
+            Timer.scheduledTimer(withTimeInterval: getInterval(index), repeats: false) { _ in
+                withAnimation {
+                    displayedResult = animationResults[index]
+                }
+
+                index += 1
+                scheduleNext()
+            }
+        }
+
+        scheduleNext()
     }
 }
 
