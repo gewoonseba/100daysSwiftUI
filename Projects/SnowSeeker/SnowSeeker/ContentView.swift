@@ -7,6 +7,18 @@
 
 import SwiftUI
 
+struct WelcomeView: View {
+    var body: some View {
+        VStack {
+            Text("Welcome to SnowSeeker!")
+                .font(.largeTitle)
+
+            Text("Please select a resort from the left-hand menu; swipe from the left edge to show it.")
+                .foregroundStyle(.secondary)
+        }
+    }
+}
+
 
 struct ContentView: View {
     let resorts: [Resort] = Bundle.main.decode("resorts.json")
@@ -38,8 +50,17 @@ struct ContentView: View {
                 }
             }
             .navigationTitle("Resorts")
+            .navigationDestination(for: Resort.self) { resort in
+                HStack {
+                    ResortDetailsView(resort: resort)
+                    SkiDetailsView(resort: resort)
+                }
+                .padding(.vertical)
+                .background(.primary.opacity(0.1))
+                ResortView(resort: resort)
+            }
         } detail: {
-            Text("Detail")
+            WelcomeView()
         }
     }
 }
