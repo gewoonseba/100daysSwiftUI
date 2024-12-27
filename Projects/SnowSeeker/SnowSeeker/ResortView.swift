@@ -9,18 +9,27 @@ import SwiftUI
 
 struct ResortView: View {
     let resort: Resort
-    
+
     @Environment(Favorites.self) var favorites
-    
+
     @State private var selectedFacility: Facility?
     @State private var showingFacility = false
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                Image(decorative: resort.id)
-                    .resizable()
-                    .scaledToFit()
+                ZStack(alignment: .bottomTrailing) {
+                    Image(decorative: resort.id)
+                        .resizable()
+                        .scaledToFit()
+
+                    Text("© \(resort.imageCredit)")
+                        .font(.caption)
+                        .foregroundStyle(.white)
+                        .padding(2)
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 4))
+                        .padding(8)
+                }
 
                 Group {
                     Text(resort.description)
@@ -44,7 +53,7 @@ struct ResortView: View {
                 }
                 .padding(.horizontal)
             }
-            
+
             Button(favorites.contains(resort) ? "Remove from Favorites" : "Add to Favorites") {
                 if favorites.contains(resort) {
                     favorites.remove(resort)
@@ -63,6 +72,7 @@ struct ResortView: View {
         }
     }
 }
+
 #Preview {
     ResortView(resort: .example)
         .environment(Favorites())
