@@ -20,18 +20,28 @@ struct WelcomeView: View {
 }
 
 struct ContentView: View {
+    enum SortType {
+        case `default`, alphabetical, country
+    }
+
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     @Environment(\.dynamicTypeSize) var dynamicTypeSize
 
     @State private var searchText = ""
     @State private var favorites = Favorites()
+    @State private var sortOrder = SortType.default
 
     let resorts: [Resort] = Bundle.main.decode("resorts.json")
     var filteredResorts: [Resort] {
-        if searchText.isEmpty {
-            resorts
-        } else {
-            resorts.filter { $0.name.localizedStandardContains(searchText) }
+        let filtered = searchText.isEmpty ? resorts : resorts.filter { $0.name.localizedStandardContains(searchText) }
+
+        return switch sortOrder {
+        case .default:
+            filtered
+        case .alphabetical:
+            filtered.sorted { $0.name < $1.name }
+        case .country:
+            filtered.sorted { $0.country < $1.country }
         }
     }
 
@@ -69,6 +79,16 @@ struct ContentView: View {
                 }
             }
             .navigationTitle("Resorts")
+            .toolbar {
+                Menu("Sort", systemImage: "arrow.up.arrow.down") {
+                    Picker("Sort", selection: $sortOrder) {
+                        Text("Default").tag(SortType.default)
+                        Text("Alphabetical").tag(SortType.alphabetical)
+                        Text("By Country").tag(SortType.country)
+                    }
+                }
+            }
+            .searchable(text: $searchText, prompt: "Search for a resort")
             .navigationDestination(for: Resort.self) { resort in
 
                 HStack {
@@ -85,7 +105,6 @@ struct ContentView: View {
 
                 ResortView(resort: resort)
             }
-            .searchable(text: $searchText, prompt: "Search for a resort")
         } detail: {
             WelcomeView()
         }
